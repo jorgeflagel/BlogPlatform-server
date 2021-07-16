@@ -1,6 +1,7 @@
 const Bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const cloudinary = require('cloudinary').v2;
 
 // loading models
 const User = require('../models/user');
@@ -34,7 +35,7 @@ const signup = async (req, res) => {
         );
 
         // sending token to client
-        res.status(201).json({ token, user:{username: savedUser.username, email: savedUser.email, _id: savedUser._id, position: savedUser.position, resume: savedUser.resume} });
+        res.status(201).json({ token, user:{username: savedUser.username, email: savedUser.email, _id: savedUser._id, position: savedUser.position, resume: savedUser.resume, profileImageUrl: savedUser.profileImageUrl} });
 
       } catch (err) {
         res.status(400).json({message: err.message});
@@ -49,6 +50,8 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
 
   const { password, username } = req.body;
+  console.log(username);
+  console.log(password);
   try {
     // searching user in database
     const userRecord = await User.findOne({ username });
@@ -63,7 +66,10 @@ const login = async (req, res) => {
             { expiresIn: process.env.TOKEN_EXPIRES_IN },
           );
           // sending token to database
-          return res.status(200).json({ token, user: {username: userRecord.username, email: userRecord.email, _id: userRecord._id, position: userRecord.position, resume: userRecord.resume}});
+          res.status(200).json({ token, user: {username: userRecord.username, email: userRecord.email, _id: userRecord._id, position: userRecord.position, resume: userRecord.resume, profileImageUrl: userRecord.profileImageUrl}});
+        }
+        else {
+          res.status(401).json({message: '¡Tu email o contraseña son incorrectos, por favor, veríficalo!'});
         }
     }
     else {
@@ -86,10 +92,34 @@ const getUserByToken = async (req, res, next) => {
 const updateUserById = async (req, res, next) => {
     try {
         let user = await User.findOneAndUpdate({_id: req.user.id}, req.body, {new: true});
+        console.log(user);
         res.status(200).json(user);
     } catch (err) {
         res.status(400).json({message: err.message});
     }
 }
 
-module.exports = { getUserByToken, updateUserById, login, signup };
+const uploadImageProfile = async (req, res, next) => {
+  if(req.body.image) {
+    try {
+      const fileStr = req.body.image;
+      console.log(cloudinary.uploader);
+      const uploadedResponse = await cloudinary.uploader.upload(fileStr, {
+        public_id: `blogplatform/profiles/${req.user.id}`,
+        overwrite: true,
+        });
+      console.log(uploadedResponse.url);
+      req.body.profileImageUrl = uploadedResponse.url;
+      next();
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({...error, message: error.statusText, });
+    }
+  } else {
+    req.body.profileImageUrl = null;
+    next();
+  }
+  
+}
+
+module.exports = { getUserByToken, updateUserById, login, signup, uploadImageProfile };

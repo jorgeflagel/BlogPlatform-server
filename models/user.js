@@ -34,6 +34,10 @@ const UserSchema = new Schema(
     admin: {
       type: Boolean,
       default: false
+    },
+    profileImageUrl: {
+      type: String,
+      default: null
     }
   },
   { timestamps: true }

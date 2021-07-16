@@ -15,12 +15,13 @@ const getComment = async (req, res, next) => {
 }
 
 const getComments = async (req, res, next) => {
+
+    console.log("#########################")
     try {
         const comments = await Comment.find({article: req.params.articleId}).populate('author', {password: 0, email: 0}).sort({updatedAt: -1});
         res.status(200).json(comments);        
     }
     catch (err) {
-        console.log(err);
         next(err);
     }
 }

@@ -3,9 +3,9 @@ const Article = require('../models/article');
 
 const getArticle = async (req, res, next) => {
     try {
-        const article = await Article.findOne({_id: req.params.articleId}).populate('author', {password: 0, email: 0});
+        const article = await Article.findOne({_id: req.params.articleId}).populate('author', {password: 0, email: 0})
         if(article) {
-            res.status(200).json(article);
+            return (res.status(200).json(article));
         }
         res.status(404).json({message: 'The article does not exist'});
     }

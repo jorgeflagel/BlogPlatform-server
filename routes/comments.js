@@ -4,6 +4,11 @@ const { verifyUser, verifyAdmin } = require('../controllers/authenticate');
 const { getComment, getComments, addComment, updateComment, removeComment } = require('../controllers/comments');
 
 
+
+
+commentsRouter.route('/byarticle/:articleId/newcomment')
+.post(verifyUser, addComment)
+
 commentsRouter.route('/byarticle/:articleId')
 .get(getComments)
 .post((req, res, next) => {
@@ -15,9 +20,6 @@ commentsRouter.route('/byarticle/:articleId')
 .delete(verifyUser, verifyAdmin, (req, res, next) => {
     res.end('You are deleting all the articles')
 });
-
-commentsRouter.route('/byarticle/:articleId/newcomment')
-.post(verifyUser, addComment)
 
 commentsRouter.route('/:commentId')
 .get(getComment)

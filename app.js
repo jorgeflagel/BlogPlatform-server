@@ -6,6 +6,7 @@ const logger = require('morgan');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const cloudinary = require('cloudinary').v2;
 
 // loading routes
 const indexRouter = require('./routes/index');
@@ -36,10 +37,16 @@ app.set('view engine', 'jade');
 // setup
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(  cors());
+app.use(cors());
+app.use(express.urlencoded({limit: '50mb', extended: true}))
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true
+});
 
 // using routes
 app.all(cors(), (req, res, next) => next());
@@ -48,6 +55,7 @@ app.use('/myuser', myUserRouter);
 app.use('/users', usersRouter);
 app.use('/articles', articlesRouter);
 app.use('/comments', commentsRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
